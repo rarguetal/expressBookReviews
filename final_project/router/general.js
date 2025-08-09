@@ -4,13 +4,13 @@ let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
 
-function searchByAuthor(authorName) {
+function searchBooksByProperty(propertyName,value) {
   let result = [];
   for (let key in books) {
-    if (books[key].author === authorName) {
+    if (books[key][propertyName] === value) {
       result.push(books[key]);
     }
-  }
+  } 
 
   return result;
 }
@@ -37,13 +37,14 @@ public_users.get('/isbn/:isbn',function (req, res) {
 public_users.get('/author/:author',function (req, res) {
   //Write your code here
   const author = req.params.author;
-  return res.send(JSON.stringify(searchByAuthor(author), null, 4))
+  return res.send(JSON.stringify(searchBooksByProperty("author",author), null, 4))
 });
 
 // Get all books based on title
 public_users.get('/title/:title',function (req, res) {
   //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+  const title = req.params.title;
+  return res.send(JSON.stringify(searchBooksByProperty("title",title), null,4));
 });
 
 //  Get book review
