@@ -4,6 +4,16 @@ let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
 
+function searchByAuthor(authorName) {
+  let result = [];
+  for (let key in books) {
+    if (books[key].author === authorName) {
+      result.push(books[key]);
+    }
+  }
+
+  return result;
+}
 
 public_users.post("/register", (req,res) => {
   //Write your code here
@@ -26,7 +36,8 @@ public_users.get('/isbn/:isbn',function (req, res) {
 // Get book details based on author
 public_users.get('/author/:author',function (req, res) {
   //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+  const author = req.params.author;
+  return res.send(JSON.stringify(searchByAuthor(author), null, 4))
 });
 
 // Get all books based on title
