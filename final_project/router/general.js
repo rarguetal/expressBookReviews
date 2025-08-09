@@ -3,67 +3,103 @@ let books = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
+const axios = require("axios");
 
-function searchBooksByProperty(propertyName,value) {
+
+
+function searchBooksByProperty(propertyName, value) {
   let result = [];
   for (let key in books) {
     if (books[key][propertyName] === value) {
       result.push(books[key]);
     }
-  } 
+  }
 
   return result;
 }
 
-public_users.post("/register", (req,res) => {
+public_users.post("/register", (req, res) => {
   //Write your code here
   const username = req.body.username;
   const password = req.body.password;
 
   if (username && password) {
-    if(!isValid(username)) {
-      users.push({"username": username, "password": password});
-      return res.status(200).json({message: "User successfully registered. Now you can login"});
+    if (!isValid(username)) {
+      users.push({ "username": username, "password": password });
+      return res.status(200).json({ message: "User successfully registered. Now you can login" });
     } else {
-      return res.status(404).json({message: "User already exists!"})
+      return res.status(404).json({ message: "User already exists!" })
     }
   }
-  return res.status(404).json({message: "Unable to register user"});
+  return res.status(404).json({ message: "Unable to register user" });
 
 });
 
 // Get the book list available in the shop
-public_users.get('/',function (req, res) {
+public_users.get('/',  function (req, res) {
   //Write your code here
   return res.send(JSON.stringify({books}, null, 4));
+
 });
 
 // Get book details based on ISBN
-public_users.get('/isbn/:isbn',function (req, res) {
+public_users.get('/isbn/:isbn', function (req, res) {
   //Write your code here
   const isbn = req.params.isbn;
   return res.send(JSON.stringify(books[isbn], null, 4));
- });
-  
+});
+
 // Get book details based on author
-public_users.get('/author/:author',function (req, res) {
+public_users.get('/author/:author', function (req, res) {
   //Write your code here
   const author = req.params.author;
-  return res.send(JSON.stringify(searchBooksByProperty("author",author), null, 4))
+  return res.send(JSON.stringify(searchBooksByProperty("author", author), null, 4))
 });
 
 // Get all books based on title
-public_users.get('/title/:title',function (req, res) {
+public_users.get('/title/:title', function (req, res) {
   //Write your code here
   const title = req.params.title;
-  return res.send(JSON.stringify(searchBooksByProperty("title",title), null,4));
+  return res.send(JSON.stringify(searchBooksByProperty("title", title), null, 4));
 });
 
 //  Get book review
-public_users.get('/review/:isbn',function (req, res) {
+public_users.get('/review/:isbn', function (req, res) {
   //Write your code here
   const isbn = req.params.isbn;
-  return res.send(JSON.stringify(books[isbn].reviews, null ,4))
+  return res.send(JSON.stringify(books[isbn].reviews, null, 4))
 });
 
+
+
+public_users.get('/books',  function (req, res) {
+  //Write your code here
+  const get_books = new Promise((resolve, reject) => {
+    resolve(res.send(JSON.stringify({books}, null,4)))
+  });
+
+  get_books.then(() => console.log("get Books"))
+
+});
+
+public_users.get('/books/isbn/:isbn', function (req, res) {
+  const book = new Promise((resolve, reject) => {
+    const isbn = req.params.isbn;
+    resolve(res.send(JSON.stringify(books[isbn])))
+  });
+  book.then(() => console.log("book by isbn"))
+});
+
+
+public_users.get('/books/author/:author', async function (req, res) {
+    const author = req.params.author;
+    const {data} = await axios.get(`http://localhost:5000/author/${author}`);
+    res.send(data);
+});
+
+public_users.get('/books/title/:title', async function (req, res) {
+  const title = req.params.title;
+  const {data} = await axios.get(`https://localhost:5000/title/${title}`);
+  
+})
 module.exports.general = public_users;
